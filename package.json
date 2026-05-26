@@ -1,5 +1,5 @@
 {
-  "name": "map-icon-plot",
+  "name": "@JieKuiGiser/map-icon-plot",
   "version": "0.1.0",
   "description": "Load SVG, apply declarative style rules, rasterize to canvas — for Cesium / Leaflet map icons",
   "license": "MIT",
@@ -52,7 +52,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/JieKuiGiser/map-icon-plot.git"
+    "url": "https://github.com/JieKuiGiser/map-icon-plot.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   },
   "homepage": "https://github.com/JieKuiGiser/map-icon-plot#readme",
   "bugs": {
