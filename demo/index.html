@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>map-icon-plot Demo</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --panel: #1a2332;
+      --text: #e7ecf3;
+      --muted: #8b9cb3;
+      --accent: #3b82f6;
+      --border: #2d3a4f;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    header h1 { margin: 0 0 0.25rem; font-size: 1.35rem; }
+    header p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+    main {
+      display: grid;
+      grid-template-columns: minmax(280px, 360px) 1fr;
+      gap: 1rem;
+      padding: 1rem 1.5rem 2rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    @media (max-width: 720px) {
+      main { grid-template-columns: 1fr; }
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.1rem;
+    }
+    .panel h2 {
+      margin: 0 0 0.75rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 0.65rem;
+      font-size: 0.9rem;
+    }
+    input[type="color"] {
+      width: 2.5rem;
+      height: 1.75rem;
+      padding: 0;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+      background: transparent;
+    }
+    input[type="range"] { flex: 1; min-width: 0; }
+    input[type="checkbox"] { width: 1rem; height: 1rem; }
+    .value { color: var(--accent); font-variant-numeric: tabular-nums; min-width: 2.5rem; text-align: right; }
+    button {
+      width: 100%;
+      margin-top: 0.5rem;
+      padding: 0.55rem 1rem;
+      border: none;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    button:hover { filter: brightness(1.08); }
+    button.secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+      margin-top: 0.4rem;
+    }
+    .preview-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+    .checker {
+      background-image:
+        linear-gradient(45deg, #252d3a 25%, transparent 25%),
+        linear-gradient(-45deg, #252d3a 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #252d3a 75%),
+        linear-gradient(-45deg, transparent 75%, #252d3a 75%);
+      background-size: 16px 16px;
+      background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+      border-radius: 10px;
+      padding: 1.5rem;
+      min-height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+    #previewCanvas {
+      max-width: 100%;
+      height: auto;
+      image-rendering: pixelated;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+    }
+    .meta {
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-align: center;
+      word-break: break-all;
+    }
+    pre.log {
+      margin: 0;
+      padding: 0.75rem;
+      background: #0a0e14;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      max-height: 140px;
+      overflow: auto;
+      color: #9cdcfe;
+    }
+    .tabs {
+      display: flex;
+      gap: 0.35rem;
+      margin-bottom: 0.75rem;
+    }
+    .tabs button {
+      width: auto;
+      flex: 1;
+      margin: 0;
+      padding: 0.4rem;
+      font-size: 0.8rem;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .tabs button.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>map-icon-plot Demo</h1>
+    <p>SVG 着色 → Canvas 栅格化。请用静态服务打开（如 <code>npx serve demo -p 5178</code>），勿直接 file:// 打开。</p>
+  </header>
+
+  <main>
+    <aside class="panel">
+      <h2>样式（MapPlotIconStyleLike）</h2>
+      <label>
+        填充色 color
+        <input type="color" id="color" value="#e63946" />
+      </label>
+      <label>
+        描边色 borderColor
+        <input type="color" id="borderColor" value="#ffffff" />
+      </label>
+      <label>
+        显示描边 border
+        <input type="checkbox" id="border" checked />
+      </label>
+      <label>
+        描边宽度
+        <span class="value" id="borderWidthVal">2</span>
+        <input type="range" id="borderWidth" min="0" max="8" step="1" value="2" />
+      </label>
+      <label>
+        缩放 scale
+        <span class="value" id="scaleVal">1</span>
+        <input type="range" id="scale" min="0.5" max="2.5" step="0.1" value="1" />
+      </label>
+      <label>
+        像素比 pixelRatio
+        <span class="value" id="pixelRatioVal">1</span>
+        <input type="range" id="pixelRatio" min="1" max="3" step="1" value="1" />
+      </label>
+
+      <div class="tabs">
+        <button type="button" class="active" data-mode="inline">内联 SVG</button>
+        <button type="button" data-mode="url">加载 sample-icon.svg</button>
+        <button type="button" data-mode="custom">自定义规则</button>
+      </div>
+
+      <button type="button" id="renderBtn">重新栅格化</button>
+      <button type="button" class="secondary" id="pngBtn">导出 PNG Data URL</button>
+
+      <p class="meta" id="apiHint" style="margin-top: 0.75rem"></p>
+    </aside>
+
+    <section class="panel preview-wrap">
+      <h2 style="align-self: flex-start">预览</h2>
+      <div class="checker">
+        <canvas id="previewCanvas" width="64" height="64"></canvas>
+      </div>
+      <p class="meta" id="sizeMeta">—</p>
+      <h2 style="align-self: flex-start; width: 100%">日志</h2>
+      <pre class="log" id="log"></pre>
+    </section>
+  </main>
+
+  <script type="module">
+    import {
+      parseSvgString,
+      applyDefaultMapIconStyle,
+      applySvgStyleRules,
+      mapPlotStyleToSvgInput,
+      svgDocumentToCanvas,
+      canvasToPngDataUrl,
+      rasterizeMapPlotIconFromUrl,
+      rasterizeStyledSvgFromUrl,
+      resolveTemplate,
+    } from "../dist/index.js";
+
+    const INLINE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <rect x="8" y="28" width="48" height="24" rx="3" fill="#888" stroke="#333" stroke-width="2"/>
+  <path d="M32 10 L54 28 L10 28 Z" fill="#666" stroke="#333" stroke-width="2"/>
+  <polygon points="20,52 32,40 44,52" fill="#777" stroke="#333" stroke-width="2"/>
+</svg>`;
+
+    const CUSTOM_RULES = {
+      rootScale: { mode: "svgWidthHeight", field: "scale", defaultValue: 1 },
+      layers: [
+        {
+          select: "path",
+          map: { fill: "$.accent", stroke: "$.stroke", "stroke-width": "$.strokeWidth" },
+        },
+        {
+          select: "rect, polygon",
+          map: { fill: "$.fill", stroke: "$.stroke", "stroke-width": "$.strokeWidth" },
+        },
+      ],
+    };
+
+    let mode = "inline";
+    let lastCanvas = null;
+
+    const $ = (id) => document.getElementById(id);
+    const logEl = $("log");
+    const apiHint = $("apiHint");
+    const preview = $("previewCanvas");
+
+    function log(msg) {
+      const line = `[${new Date().toLocaleTimeString()}] ${msg}`;
+      logEl.textContent = (logEl.textContent ? logEl.textContent + "\n" : "") + line;
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function readStyle() {
+      return {
+        color: $("color").value,
+        border: $("border").checked,
+        borderColor: $("borderColor").value,
+        borderWidth: Number($("borderWidth").value),
+        scale: Number($("scale").value),
+      };
+    }
+
+    function readRasterizeOptions() {
+      return {
+        pixelRatio: Number($("pixelRatio").value),
+        revokeBlobUrls: true,
+      };
+    }
+
+    function bindRange(id, valId) {
+      const input = $(id);
+      const val = $(valId);
+      input.addEventListener("input", () => {
+        val.textContent = input.value;
+        render();
+      });
+    }
+    bindRange("borderWidth", "borderWidthVal");
+    bindRange("scale", "scaleVal");
+    bindRange("pixelRatio", "pixelRatioVal");
+
+    ["color", "borderColor", "border"].forEach((id) => {
+      $(id).addEventListener("input", render);
+      $(id).addEventListener("change", render);
+    });
+
+    document.querySelectorAll(".tabs button").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tabs button").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        mode = btn.dataset.mode;
+        render();
+      });
+    });
+
+    $("renderBtn").addEventListener("click", render);
+
+    $("pngBtn").addEventListener("click", () => {
+      if (!lastCanvas) {
+        log("请先栅格化");
+        return;
+      }
+      const url = canvasToPngDataUrl(lastCanvas);
+      log(`PNG length: ${url.length} chars`);
+      console.log("canvasToPngDataUrl:", url.slice(0, 80) + "…");
+      window.open(url, "_blank");
+    });
+
+    function showCanvas(canvas) {
+      lastCanvas = canvas;
+      const ctx = preview.getContext("2d");
+      preview.width = canvas.width;
+      preview.height = canvas.height;
+      ctx.clearRect(0, 0, preview.width, preview.height);
+      ctx.drawImage(canvas, 0, 0);
+      $("sizeMeta").textContent = `canvas ${canvas.width} × ${canvas.height} px`;
+    }
+
+    async function render() {
+      const style = readStyle();
+      const options = readRasterizeOptions();
+      const input = mapPlotStyleToSvgInput(style);
+
+      try {
+        let canvas;
+
+        if (mode === "inline") {
+          apiHint.textContent = "API: parseSvgString → applyDefaultMapIconStyle → svgDocumentToCanvas";
+          const doc = parseSvgString(INLINE_SVG);
+          applyDefaultMapIconStyle(doc, input);
+          canvas = await svgDocumentToCanvas(doc, options);
+          log(`inline pipeline, resolveTemplate demo: fill=${resolveTemplate("$.fill", input)}`);
+        } else if (mode === "url") {
+          apiHint.textContent = "API: rasterizeMapPlotIconFromUrl('./sample-icon.svg', style)";
+          const url = new URL("./sample-icon.svg", import.meta.url).href;
+          canvas = await rasterizeMapPlotIconFromUrl(url, style, options);
+          log(`loaded ${url}`);
+        } else {
+          apiHint.textContent = "API: rasterizeStyledSvgFromUrl + 分 path/rect 规则";
+          const url = new URL("./sample-icon.svg", import.meta.url).href;
+          const customInput = {
+            ...input,
+            accent: "#f4a261",
+          };
+          canvas = await rasterizeStyledSvgFromUrl(url, CUSTOM_RULES, customInput, options);
+          log("custom rules: path uses accent, rect/circle use fill");
+        }
+
+        showCanvas(canvas);
+        log("ok");
+      } catch (e) {
+        log(`error: ${e?.message ?? e}`);
+        console.error(e);
+      }
+    }
+
+    render();
+  </script>
+</body>
+</html>

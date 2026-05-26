@@ -1,0 +1,61 @@
+{
+  "name": "map-icon-plot",
+  "version": "0.1.0",
+  "description": "Load SVG, apply declarative style rules, rasterize to canvas — for Cesium / Leaflet map icons",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "demo"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "demo": "npx --yes serve demo -p 5178",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "vitest": "^3.0.5",
+    "jsdom": "^25.0.1",
+    "@types/jsdom": "^21.1.7"
+  },
+  "keywords": [
+    "svg",
+    "canvas",
+    "cesium",
+    "leaflet",
+    "map",
+    "military-symbol",
+    "rasterize"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JieKuiGiser/map-icon-plot.git"
+  },
+  "homepage": "https://github.com/JieKuiGiser/map-icon-plot#readme",
+  "bugs": {
+    "url": "https://github.com/JieKuiGiser/map-icon-plot/issues"
+  }
+}
